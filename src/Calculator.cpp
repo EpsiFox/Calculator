@@ -4,6 +4,12 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <cctype>
+
+enum class Operation 
+{
+    Add = 1, Sub, Div, Mul, Pow, Integral, Min, Max, Unknowm
+};
 
 template <typename T>
 auto min(const T& a, const T& b) 
@@ -32,8 +38,6 @@ float integral(double lower_end, double high_end)
     return area = ((3*h)/8)*(f(a) + 3*f((2*a+b)/3) + 3*f((a+2*b)/3) + f(b));
 }
 
-
-
 float pow(float x, int n) 
 {
     if (n < 0) 
@@ -61,6 +65,114 @@ void writeToFile(std::string pathFile, std::string str)
     fs.close();
 }
 
+void writeResultToFile(double result, double first_number, double second_number, int operation_number, std::string& startCalculator, bool started) 
+{
+    std::cout << "Starting..." << std::endl;
+
+    std::ostringstream oss;
+    oss << std::fixed << std::setprecision(2);
+
+    oss << "result of calculating: " << result << "\n";
+    oss << "used: first number: " << first_number << ", second number: " << second_number << ", number of operation: " << operation_number;
+    std::cout << oss.str() << std::endl;
+    writeToFile("result.txt", oss.str());
+    std::cout << "Print 'Close' to close calculator" << std::endl;
+    std::cin >> startCalculator;
+    if(startCalculator == "Close" || startCalculator == "close") 
+    {
+        std::cout << std::endl << "Closing calculator." << std::endl;
+        started = false;
+    }
+}
+
+std::string readFromFile(const std::string& filePath) 
+{
+    std::ostringstream buffer;
+
+    std::ifstream in(filePath);
+    if(in.is_open()) 
+    {
+        buffer << in.rdbuf();
+    }
+    else if(!in) 
+    {
+        std::cerr << "Error: file is not found";
+    }
+    in.close();
+    return buffer.str();
+}
+
+std::string readStringFromFile(const std::string& filePath, const std::string& prefix) 
+{
+
+    std::ifstream in(filePath);
+    if(!in) 
+    {
+        std::cerr << "Error: file is not found";
+    }
+
+    std::string line;
+    while(std::getline(in, line)) 
+    {
+        if(line.rfind(prefix, 0) == 0) 
+        {
+            return line;
+        }
+    }
+    
+    in.close();
+    return "Error: string is not found";
+}
+
+Operation getOperationFromLine(const std::string& line) 
+{
+    std::istringstream iss(line);
+    std::string tmp;
+    int opNum = 0;
+
+    iss >> tmp >> tmp >> tmp >> opNum;
+
+    switch (opNum)
+    {
+    case 1: return Operation::Add;
+    case 2: return Operation::Sub; 
+    case 3: return Operation::Div;
+    case 4: return Operation::Mul; 
+    case 5: return Operation::Pow;
+    case 6: return Operation::Integral; 
+    case 7: return Operation::Min;
+    case 8: return Operation::Max; 
+    default: return Operation::Unknowm;
+    }
+}
+
+double getNumberFromLine(const std::string& line) 
+{
+    std::istringstream iss(line);
+    std::string tmp;
+    double value = 0;
+
+    iss >> tmp >> tmp >> value;
+
+    return value;
+}
+
+double doCalculateByOperation(double first_number, double second_number, Operation operation) 
+{
+    switch(operation) 
+    {
+        case Operation::Add: return first_number + second_number;
+        case Operation::Sub: return first_number - second_number;
+        case Operation::Div: if(second_number == 0) return 0; 
+                             return first_number / second_number;
+        case Operation::Mul: return first_number * second_number;
+        case Operation::Pow: return pow(first_number, second_number); 
+        case Operation::Integral: return integral(first_number, second_number);
+        case Operation::Min: return min(first_number, second_number); 
+        case Operation::Max: return max(first_number, second_number);
+        default: throw std::invalid_argument("Unknown operatio");
+    }
+}
 
 double calculate(double a, double b, int operation)
 {
@@ -71,7 +183,7 @@ double calculate(double a, double b, int operation)
         case 2:
             return a - b;
         case 3:
-            if (b == 0) return 0;
+            if(b == 0) return 0;
             return a / b;
         case 4:
             return a * b;
@@ -88,59 +200,129 @@ double calculate(double a, double b, int operation)
     }
 }
 
-int main() 
+bool isCloseCommand(const std::string& u_input) 
 {
-    std::cout << "Calculator!" << std::endl;
-    std::cout << "there a 8 operations which the calculator provides: " << std::endl
-              << "1: a basic addition operation"                        << std::endl
-              << "2: a basic substraction operation"                    << std::endl
-              << "3: a basic dividing operation"                        << std::endl
-              << "4: a basic multiplication operation"                  << std::endl
-              << "5: a pow operation"                                   << std::endl
-              << "6: a integral operation"                              << std::endl
-              << "7: a min of two numbers"                              << std::endl
-              << "8: a max of two numbers"                              << std::endl;
-
-    std::cout << "Write ur first number" << std::endl;
-    float first_number;
-    std::cin >> first_number;
-
-    std::cout << "Write ur second number" << std::endl;
-    float second_number;
-    std::cin >> second_number;
-
-    std::cout << "Write a operation number" << std::endl;
-    int operation_number;
-    std::cin >> operation_number;
-
-    std::cout << "Calculating..." << std::endl;
-    auto result = calculate(first_number, second_number, operation_number);
-
-    std::cout << "Result: " << result << std::endl; 
-
-    std::cout << "U want to write result to file?" << std::endl;
-    std::string answer;
-    std::cin >> answer;
-
-    if (answer == "true" || answer == "yes" || answer == "y") 
+    std::string lower;
+    lower.reserve(u_input.size());
+    for(char c : u_input) 
     {
-        std::cout << "Starting..." << std::endl;
+        lower.push_back(std::tolower(c));
+    }
+    return (lower == "close");
+}
 
-        std::ostringstream oss;
-        oss << std::fixed << std::setprecision(2);
+double readNumberOrString(bool& started) 
+{
+    std::string input;
+    std::cin >> input;
 
-        oss << "result of calculating: " << result << "\n";
-        oss << "used: first number: " << first_number << ", second number: " << second_number << ", number of operation: " << operation_number;
-
-        std::cout << oss.str();
-        writeToFile("result.txt", oss.str());
-
+    if(isCloseCommand(input)) 
+    {
         std::cout << std::endl << "Closing calculator." << std::endl;
+        started = false;
         return 0;
     }
-    else if (answer == "false" || answer == "no" || answer == "n") 
+
+    try 
     {
-        std::cout << "Closing calculator." << std::endl;
-        return 0;
+        return std::stod(input);
+    } 
+    catch (...) 
+    {
+        std::cerr << "Invalid input. Please enter a number or 'Close'" << std::endl;
+        return readNumberOrString(started);
+    }
+}
+
+bool askUser(const std::string& question) 
+{
+    std::string answer;
+    std::cout << question << " (y/n, yes/no, true/false): " << std::endl;
+    std::cin >> answer;
+    return (answer == "y" || answer == "yes" || answer == "true");
+}
+
+int main() 
+{
+    std::cout << "Print 'Start' to start calculator" << std::endl;
+    std::string startCalculator;
+    std::cin >> startCalculator;
+    bool started = false;
+
+    if(startCalculator == "Start" || startCalculator == "start") 
+    {
+        started = true;
+    }
+    while(started) 
+    {
+        std::cout << "Calculator!" << std::endl;
+        std::cout << "there a 8 operations which the calculator provides: " << std::endl
+                  << "1: a basic addition operation"                        << std::endl
+                  << "2: a basic substraction operation"                    << std::endl
+                  << "3: a basic dividing operation"                        << std::endl
+                  << "4: a basic multiplication operation"                  << std::endl
+                  << "5: a pow operation"                                   << std::endl
+                  << "6: a integral operation"                              << std::endl
+                  << "7: a min of two numbers"                              << std::endl
+                  << "8: a max of two numbers"                              << std::endl;
+
+        std::cout << "Write your first number" << std::endl;
+        double first_number = readNumberOrString(started);
+        if (!started) break;
+
+        std::cout << "Write your second number" << std::endl;
+        double second_number = readNumberOrString(started);
+        if (!started) break;
+
+        std::cout << "Write a operation number" << std::endl;
+        int operation_number = readNumberOrString(started);;
+        if (!started) break;
+
+        std::cout << "Calculating..." << std::endl;
+        double result = calculate(first_number, second_number, operation_number);
+
+        std::cout << "Result: " << result << std::endl; 
+
+        if(askUser("Do you want to write result to file?")) 
+        {
+            writeResultToFile(result, first_number, second_number, operation_number, startCalculator, started);
+        }
+        else if(askUser("Do you want to read expression from file?")) 
+        {
+            std::cout << "enter a file name" << std::endl;
+            std::string file_name;
+            std::cin >> file_name;
+
+            std::string first_variable = readStringFromFile(file_name, "first");
+            std::string second_variable = readStringFromFile(file_name, "second");
+            std::string operation_str = readStringFromFile(file_name, "number");
+
+            double first_var = getNumberFromLine(first_variable);
+            double second_var = getNumberFromLine(second_variable);
+            Operation op = getOperationFromLine(operation_str);
+
+            double d_result = doCalculateByOperation(first_var, second_var, op);
+
+            std::cout << "The result is: " << d_result << std::endl;
+        }
+        else 
+        {
+            std::cout << "Print 'Close' to close calculator" << std::endl;
+            std::cin >> startCalculator;
+            if(startCalculator == "Close" || startCalculator == "close") 
+            {
+                std::cout << std::endl << "Closing calculator." << std::endl;
+                started = false;
+                return 0;
+            }
+        }
+
+        std::string u_answer;
+        std::cout << "Do you want to continue?" << std::endl;
+        std::cin >> u_answer;
+        if(u_answer == "n" || u_answer == "no")
+        {
+            started = false;
+        }
     }
 }
