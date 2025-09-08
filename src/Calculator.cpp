@@ -5,13 +5,14 @@
 #include <iomanip>
 #include <string>
 #include <cctype>
+#include <string_view>
 
 
 /////////////////// CONSTANTS ///////////////////
 
-#define STR_FIRST "first"
-#define STR_SECOND "second"
-#define STR_NUMBER "number"
+constexpr std::string_view STR_FIRST = "first";
+constexpr std::string_view STR_SECOND = "second";
+constexpr std::string_view STR_NUMBER = "number";
 
 /////////////////// MATH ///////////////////
 
@@ -271,9 +272,9 @@ void calculateFromFile(std::string& startCalculator, bool started)
     std::string file_name;
     std::cin >> file_name;
 
-    std::string first_variable = readStringFromFile(file_name, STR_FIRST);
-    std::string second_variable = readStringFromFile(file_name, STR_SECOND);
-    std::string operation_str = readStringFromFile(file_name, STR_NUMBER);
+    std::string first_variable = readStringFromFile(file_name, (std::string)STR_FIRST);
+    std::string second_variable = readStringFromFile(file_name, (std::string)STR_SECOND);
+    std::string operation_str = readStringFromFile(file_name, (std::string)STR_NUMBER);
 
     double first_var = getNumberFromLine(first_variable);
     double second_var = getNumberFromLine(second_variable);
