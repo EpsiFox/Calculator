@@ -72,7 +72,7 @@ std::string getOperationName(Operation operation)
     switch (operation)
     {
     case Operation::Add: return "Addition";
-    case Operation::Sub: return "Substraction";
+    case Operation::Sub: return "Subtraction";
     case Operation::Div: return "Division";
     case Operation::Mul: return "Multiplication";
     case Operation::Pow: return "Power";
@@ -198,6 +198,7 @@ void writeResultToFile(double result, std::string& file)
     writeToFile(file, oss.str());
 }
 
+/**
 std::string readFromFile(const std::string& filePath) 
 {
     std::ostringstream buffer;
@@ -214,6 +215,7 @@ std::string readFromFile(const std::string& filePath)
     in.close();
     return buffer.str();
 }
+*/
 
 std::string readStringFromFile(const std::string& filePath, const std::string& prefix) 
 {
@@ -265,7 +267,7 @@ class Calculator
         {            
             std::cout     << "\n     === ALL OPERATIONS ==="                  << std::endl
                           << "1 or add/+         : Addition"                  << std::endl
-                          << "2 or sub/-         : Substraction"              << std::endl
+                          << "2 or sub/-         : Subtraction"              << std::endl
                           << "3 or div//         : Dividing"                  << std::endl
                           << "4 or mul/*         : Multiplication"            << std::endl
                           << "5 or pow/^         : Power"                     << std::endl
@@ -392,7 +394,7 @@ class Calculator
                 return;
             }
 
-            std::cout << "\nCalculatin...";
+            std::cout << "\nCalculating...";
 
             double d_result = calculate(first_var, second_var, operation);
             
