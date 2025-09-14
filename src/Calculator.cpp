@@ -356,10 +356,12 @@ class Calculator
                 Operation operation = getOperation();
                 if(!started || operation == Operation::Unknown) return;
 
-                std::cout << "\nCalculating..." << std::endl;
+                std::cout << "\nCalculating...\n" << std::endl;
                 double result = calculate(first, second, operation);
 
-                if(askUser("Save result to file?")) 
+                std::cout << "The result is: " << result << std::endl;
+
+                if(askUser("\nSave result to file?")) 
                 {
                     writeResultToFile(result, first, second, operation);
                 }
